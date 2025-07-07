@@ -1,30 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Live Camera Access</title>
+  <meta charset="UTF-8" />
+  <title>Live Camera & Save Photo</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-    video { width: 80%; max-width: 600px; border: 2px solid #000; margin-top: 20px; }
-    a { display: inline-block; margin-top: 20px; font-size: 20px; color: blue; cursor: pointer; }
+    body { text-align: center; font-family: sans-serif; }
+    video, canvas { width: 80%; max-width: 400px; margin-top: 20px; }
+    button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
   </style>
 </head>
 <body>
-  <h1>Camera Access Demo</h1>
+  <h1>Live Camera</h1>
   <a id="startCameraLink">Start Camera</a>
   <div>
     <video id="video" autoplay playsinline></video>
+    <canvas id="canvas" style="display:none;"></canvas>
   </div>
+  <button id="captureBtn" style="display:none;">Capture & Save Photo</button>
 
   <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureBtn = document.getElementById('captureBtn');
+
     document.getElementById('startCameraLink').addEventListener('click', async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        const videoElement = document.getElementById('video');
-        videoElement.srcObject = stream;
+        video.srcObject = stream;
+        captureBtn.style.display = 'inline-block';
       } catch (err) {
-        alert('Error accessing the camera: ' + err.message);
+        alert('Error: ' + err.message);
       }
+    });
+
+    captureBtn.addEventListener('click', () => {
+      const ctx = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Convert to base64
+      const dataUrl = canvas.toDataURL('image/png');
+
+      // Send to server
+      fetch('/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: dataUrl })
+      }).then(res => res.text())
+        .then(msg => alert(msg))
+        .catch(err => alert('Upload failed: ' + err.message));
     });
   </script>
 </body>
