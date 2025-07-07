@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Camera Access</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+    video { width: 80%; max-width: 600px; border: 2px solid #000; margin-top: 20px; }
+    a { display: inline-block; margin-top: 20px; font-size: 20px; color: blue; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Camera Access Demo</h1>
+  <a id="startCameraLink">Start Camera</a>
+  <div>
+    <video id="video" autoplay playsinline></video>
+  </div>
+
+  <script>
+    document.getElementById('startCameraLink').addEventListener('click', async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const videoElement = document.getElementById('video');
+        videoElement.srcObject = stream;
+      } catch (err) {
+        alert('Error accessing the camera: ' + err.message);
+      }
+    });
+  </script>
+</body>
+</html>
